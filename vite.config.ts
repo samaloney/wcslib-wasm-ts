@@ -1,4 +1,5 @@
-import { defineConfig } from 'vite';
+// import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   // This ensures Vite doesn't try to process the .wasm as a standard asset

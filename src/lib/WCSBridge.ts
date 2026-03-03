@@ -14,8 +14,7 @@ export class WCSBridge {
         if (isNode) {
             // In Vitest/Node, we manually provide the binary
             // You may need to adjust this path based on your test runner location
-            const wasmBuffer = readFileSync('./src/lib/generated/wcslib-8.5.wasm');
-            config.wasmBinary = wasmBuffer;
+            config.wasmBinary = readFileSync('./src/lib/generated/wcslib-8.5.wasm');
         } else {
             // In Browser, use the URL
             config.locateFile = (path: string) => path.endsWith('.wasm') ? wasmUrl : path;
