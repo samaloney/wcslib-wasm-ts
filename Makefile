@@ -7,7 +7,6 @@ WCS_DIR = $(VENDOR_DIR)/wcslib-$(WCS_VERSION)
 
 # Output paths
 OUT_DIR = ./src/lib/generated
-JS_GLUE = $(OUT_DIR)/wcslib.js
 
 # Emscripten Settings
 EMCC = emcc
@@ -24,40 +23,35 @@ EMCC_FLAGS = -s MODULARIZE=1 \
 .PHONY: all clean
 
 # Default task
-all: build-wasm
+all: $(OUT_DIR)/wcslib-$(WCS_VERSION).js
 
 # 1. Download the source tarball
-fetch:
+$(VENDOR_DIR)/$(WCS_TAR):
 	@mkdir -p $(VENDOR_DIR)
-	@if [ ! -f $(VENDOR_DIR)/$(WCS_TAR) ]; then \
-		echo "🌐 Downloading wcslib $(WCS_VERSION)..."; \
-		curl -L $(WCS_URL) -o $(VENDOR_DIR)/$(WCS_TAR); \
-	else \
-		echo "✅ Tarball already exists."; \
-	fi
+	@echo "🌐 Downloading wcslib $(WCS_VERSION)..."
+	@curl -L $(WCS_URL) -o $(VENDOR_DIR)/$(WCS_TAR)
 
 # 2. Extract the source
-extract: fetch
-	@if [ ! -d $(WCS_DIR) ]; then \
-		echo "📦 Extracting source..."; \
-		tar -vxjf $(VENDOR_DIR)/$(WCS_TAR) -C $(VENDOR_DIR); \
-	else \
-		echo "✅ Source already extracted."; \
-	fi
+$(WCS_DIR)/configure: $(VENDOR_DIR)/$(WCS_TAR)
+	@echo "📦 Extracting source..."; \
+	tar -xjf $(VENDOR_DIR)/$(WCS_TAR) -C $(VENDOR_DIR)
+	# Need this or the wasm build breaks due to root package.json
+	echo '{"type": "commonjs"}' > $(WCS_DIR)/package.json
+	touch $(WCS_DIR)/configure
 
 # 3. Configure for Emscripten
 # This creates the Makefile inside the vendor directory
-$(WCS_DIR)/Makefile: extract
+$(WCS_DIR)/config.status: $(WCS_DIR)/configure
 	@echo "🔧 Configuring wcslib-$(WCS_VERSION) for Emscripten..."
 	cd $(WCS_DIR) && emconfigure ./configure --disable-fortran --without-cfitsio --without-pgplot
 
 # 4. Compile the C static library
-$(WCS_DIR)/C/libwcs-$(WCS_VERSION).a: $(WCS_DIR)/Makefile
+$(WCS_DIR)/C/libwcs-$(WCS_VERSION).a: $(WCS_DIR)/config.status
 	@echo "🔨 Building wcslib-$(WCS_VERSION) library..."
 	cd $(WCS_DIR) && emmake make
 
 # 5. Generate Wasm/JS Glue code
-build-wasm: $(WCS_DIR)/C/libwcs-$(WCS_VERSION).a
+$(OUT_DIR)/wcslib-$(WCS_VERSION).js:  $(WCS_DIR)/C/libwcs-$(WCS_VERSION).a
 	@echo "🚀 Compiling to WebAssembly..."
 	@mkdir -p $(OUT_DIR)
 	$(EMCC) $(OPTIMIZE) \
