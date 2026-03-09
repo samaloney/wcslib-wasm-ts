@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { WCSBridge } from './WCSBridge';
+import { WcsBridge } from './WcsBridge.ts';
 
 describe('WCSLib Wasm Integration', () => {
-  let wcs: WCSBridge;
+  let wcs: WcsBridge;
 
   // A standard 80-character per line FITS header
   // Note: Each line MUST be exactly 80 characters.
@@ -23,7 +23,7 @@ describe('WCSLib Wasm Integration', () => {
     "END                                                                             ";
 
   beforeAll(async () => {
-    wcs = new WCSBridge();
+    wcs = new WcsBridge();
     await wcs.init();
   });
 

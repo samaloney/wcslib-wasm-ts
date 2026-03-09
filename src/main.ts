@@ -1,6 +1,6 @@
-import { WCSBridge } from './lib/WCSBridge';
+import { WcsBridge } from './lib/WcsBridge.ts';
 
-const wcs = new WCSBridge();
+const wcs = new WcsBridge();
 
 wcs.init().then(() => {
   console.log("🌌 WCSLib Wasm Loaded!");

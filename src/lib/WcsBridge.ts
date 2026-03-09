@@ -1,9 +1,8 @@
 // @ts-ignore
 import WcsModuleFactory from './generated/wcslib-8.5.js';
 import wasmUrl from './generated/wcslib-8.5.wasm?url';
-import {readFileSync} from 'node:fs'; // Node-only for testing
 
-export class WCSBridge {
+export class WcsBridge {
     private module: any;
 
     async init() {
@@ -13,7 +12,7 @@ export class WCSBridge {
 
         if (isNode) {
             // In Vitest/Node, we manually provide the binary
-            // You may need to adjust this path based on your test runner location
+            const { readFileSync } = await import('node:fs');
             config.wasmBinary = readFileSync('./src/lib/generated/wcslib-8.5.wasm');
         } else {
             // In Browser, use the URL
@@ -23,7 +22,7 @@ export class WCSBridge {
         const instance = await WcsModuleFactory(config);
 
         // Debug: Log the instance keys to see what Emscripten gave us
-        console.log("Module Keys:", Object.keys(instance).filter(k => k.startsWith('HEAP')));
+        console.debug("Module Keys:", Object.keys(instance));
 
         this.module = instance;
     }
